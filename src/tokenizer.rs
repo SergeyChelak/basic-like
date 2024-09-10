@@ -1,6 +1,6 @@
 use std::{collections::HashMap, mem::swap};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TokenType {
     Word,
     Number,
@@ -11,9 +11,10 @@ pub enum TokenType {
     Operator,
     OpenParenthesis,
     CloseParenthesis,
+    Eof,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token {
     pub text: String,
     pub t_type: TokenType,
@@ -32,6 +33,10 @@ impl Token {
             text: ch.to_string(),
             t_type,
         }
+    }
+
+    pub fn eof() -> Self {
+        Self::new("", TokenType::Eof)
     }
 }
 
@@ -91,7 +96,7 @@ impl Tokenizer {
                         } else if ch.is_alphabetic() {
                             self.accumulator.push(ch);
                             self.state = State::Word;
-                        } else if ch.is_digit(10) {
+                        } else if ch.is_ascii_digit() {
                             self.accumulator.push(ch);
                             self.state = State::Number;
                         } else if ch == '"' {
@@ -114,7 +119,7 @@ impl Tokenizer {
                         // HACK: Negative numbers and floating points aren't supported.
                         // To get a negative number, just do 0 - <your number>.
                         // To get a floating point, divide.
-                        if ch.is_digit(10) {
+                        if ch.is_ascii_digit() {
                             self.accumulator.push(ch);
                         } else {
                             self.push_accumulator(TokenType::Number);
@@ -173,7 +178,7 @@ mod test {
     fn tokenize_comment() {
         let script = "' this is a comment";
         let mut tokenizer = Tokenizer::new();
-        let tokens = tokenizer.tokenize(&script);
+        let tokens = tokenizer.tokenize(script);
         assert!(tokens.is_empty());
     }
 
@@ -181,7 +186,7 @@ mod test {
     fn tokenize_digit() {
         let script = "12345";
         let mut tokenizer = Tokenizer::new();
-        let tokens = tokenizer.tokenize(&script);
+        let tokens = tokenizer.tokenize(script);
         assert_eq!(tokens.len(), 1);
         assert!(matches!(tokens[0].t_type, TokenType::Number));
         assert_eq!(tokens[0].text, "12345");
@@ -191,7 +196,7 @@ mod test {
     fn tokenize_word() {
         let script = "abc";
         let mut tokenizer = Tokenizer::new();
-        let tokens = tokenizer.tokenize(&script);
+        let tokens = tokenizer.tokenize(script);
         assert_eq!(tokens.len(), 1);
         assert!(matches!(tokens[0].t_type, TokenType::Word));
         assert_eq!(tokens[0].text, "abc");
@@ -201,7 +206,7 @@ mod test {
     fn tokenize_label() {
         let script = "abc:";
         let mut tokenizer = Tokenizer::new();
-        let tokens = tokenizer.tokenize(&script);
+        let tokens = tokenizer.tokenize(script);
         assert_eq!(tokens.len(), 1);
         assert!(matches!(tokens[0].t_type, TokenType::Label));
         assert_eq!(tokens[0].text, "abc");
@@ -211,7 +216,7 @@ mod test {
     fn tokenize_word_with_digits() {
         let script = "abc123";
         let mut tokenizer = Tokenizer::new();
-        let tokens = tokenizer.tokenize(&script);
+        let tokens = tokenizer.tokenize(script);
         assert_eq!(tokens.len(), 1);
         assert!(matches!(tokens[0].t_type, TokenType::Word));
         assert_eq!(tokens[0].text, "abc123");
@@ -221,7 +226,7 @@ mod test {
     fn tokenize_string() {
         let script = "\"string string string\"";
         let mut tokenizer = Tokenizer::new();
-        let tokens = tokenizer.tokenize(&script);
+        let tokens = tokenizer.tokenize(script);
         assert_eq!(tokens.len(), 1);
         assert!(matches!(tokens[0].t_type, TokenType::String));
         assert_eq!(tokens[0].text, "string string string");
@@ -242,7 +247,7 @@ mod test {
     fn tokenize_expression() {
         let script = "2+2=4";
         let mut tokenizer = Tokenizer::new();
-        let tokens = tokenizer.tokenize(&script);
+        let tokens = tokenizer.tokenize(script);
         assert_eq!(tokens.len(), 5);
         assert!(matches!(tokens[0].t_type, TokenType::Number));
         assert!(matches!(tokens[1].t_type, TokenType::Operator));

@@ -2,8 +2,10 @@ use std::env;
 use std::fs::read_to_string;
 
 use interpreter::Interpreter;
+mod ast;
 mod interpreter;
-mod token;
+mod parser;
+mod tokenizer;
 
 fn main() {
     let mut args = env::args();
