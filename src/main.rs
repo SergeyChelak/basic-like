@@ -3,6 +3,7 @@ use std::fs::read_to_string;
 
 use interpreter::Interpreter;
 mod interpreter;
+mod token;
 
 fn main() {
     let mut args = env::args();
