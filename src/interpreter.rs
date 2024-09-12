@@ -1,9 +1,9 @@
-use crate::{ast::Value, parser::Parser, tokenizer::Tokenizer};
+use crate::{ast::value::Value, parser::Parser, tokenizer::Tokenizer};
 use std::collections::HashMap;
 
 pub struct Interpreter {
     labels: HashMap<String, u32>,
-    variables: HashMap<String, Box<dyn Value>>,
+    variables: HashMap<String, Value>,
     // current_statement: usize,
 }
 
