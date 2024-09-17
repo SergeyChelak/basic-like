@@ -1,6 +1,8 @@
+use crate::interpreter::InterpreterContext;
+
 use super::{Expression, Value};
 
-struct OperatorExpression {
+pub struct OperatorExpression {
     left: Box<dyn Expression>,
     operator: char,
     right: Box<dyn Expression>,
@@ -17,9 +19,9 @@ impl OperatorExpression {
 }
 
 impl Expression for OperatorExpression {
-    fn evaluate(&self) -> Value {
-        let left_value = self.left.evaluate();
-        let right_value = self.right.evaluate();
+    fn evaluate(&self, context: &InterpreterContext) -> Value {
+        let left_value = self.left.evaluate(context);
+        let right_value = self.right.evaluate(context);
         let is_left_numeric = left_value.is_numeric();
         match self.operator {
             '=' => {
@@ -89,7 +91,8 @@ mod test {
         let right = Box::new(Value::number(10.0));
         let operator = '=';
         let op_expr = OperatorExpression::new(left, operator, right);
-        let val = op_expr.evaluate();
+        let context = InterpreterContext::default();
+        let val = op_expr.evaluate(&context);
         assert!(val.is_numeric());
         assert_eq!(val.to_number(), 1.0);
     }
@@ -100,7 +103,8 @@ mod test {
         let right = Box::new(Value::number(2.0));
         let operator = '=';
         let op_expr = OperatorExpression::new(left, operator, right);
-        let val = op_expr.evaluate();
+        let context = InterpreterContext::default();
+        let val = op_expr.evaluate(&context);
         assert_eq!(val.to_number(), 0.0);
     }
 
@@ -110,7 +114,8 @@ mod test {
         let right = Box::new(Value::string("10".to_string()));
         let operator = '=';
         let op_expr = OperatorExpression::new(left, operator, right);
-        let val = op_expr.evaluate();
+        let context = InterpreterContext::default();
+        let val = op_expr.evaluate(&context);
         assert_eq!(val.to_number(), 1.0);
     }
 
@@ -120,7 +125,8 @@ mod test {
         let right = Box::new(Value::string("11".to_string()));
         let operator = '=';
         let op_expr = OperatorExpression::new(left, operator, right);
-        let val = op_expr.evaluate();
+        let context = InterpreterContext::default();
+        let val = op_expr.evaluate(&context);
         assert_eq!(val.to_number(), 0.0);
     }
 
@@ -130,7 +136,8 @@ mod test {
         let right = Box::new(Value::number(21.0));
         let operator = '+';
         let op_expr = OperatorExpression::new(left, operator, right);
-        let val = op_expr.evaluate();
+        let context = InterpreterContext::default();
+        let val = op_expr.evaluate(&context);
         assert!(val.is_numeric());
         assert_eq!(val.to_number(), 31.0);
     }
@@ -141,7 +148,8 @@ mod test {
         let right = Box::new(Value::string("def".to_string()));
         let operator = '+';
         let op_expr = OperatorExpression::new(left, operator, right);
-        let val = op_expr.evaluate();
+        let context = InterpreterContext::default();
+        let val = op_expr.evaluate(&context);
         assert!(!val.is_numeric());
         assert_eq!(val.to_string(), "abcdef");
     }
@@ -152,7 +160,8 @@ mod test {
         let right = Box::new(Value::string("20".to_string()));
         let operator = '+';
         let op_expr = OperatorExpression::new(left, operator, right);
-        let val = op_expr.evaluate();
+        let context = InterpreterContext::default();
+        let val = op_expr.evaluate(&context);
         assert!(val.is_numeric());
         assert_eq!(val.to_number(), 30.0);
     }
@@ -164,7 +173,8 @@ mod test {
         let right = Box::new(Value::string("abc".to_string()));
         let operator = '+';
         let op_expr = OperatorExpression::new(left, operator, right);
-        let _ = op_expr.evaluate();
+        let context = InterpreterContext::default();
+        let _ = op_expr.evaluate(&context);
     }
 
     #[test]
@@ -173,7 +183,8 @@ mod test {
         let right = Box::new(Value::number(10.0));
         let operator = '+';
         let op_expr = OperatorExpression::new(left, operator, right);
-        let val = op_expr.evaluate();
+        let context = InterpreterContext::default();
+        let val = op_expr.evaluate(&context);
         assert!(!val.is_numeric());
         assert_eq!(val.to_string(), "2010");
     }
@@ -184,7 +195,8 @@ mod test {
         let right = Box::new(Value::number(10.0));
         let operator = '-';
         let op_expr = OperatorExpression::new(left, operator, right);
-        let val = op_expr.evaluate();
+        let context = InterpreterContext::default();
+        let val = op_expr.evaluate(&context);
         assert!(val.is_numeric());
         assert_eq!(val.to_number(), 11.0);
     }
@@ -195,7 +207,8 @@ mod test {
         let right = Box::new(Value::number(10.0));
         let operator = '-';
         let op_expr = OperatorExpression::new(left, operator, right);
-        let val = op_expr.evaluate();
+        let context = InterpreterContext::default();
+        let val = op_expr.evaluate(&context);
         assert_eq!(val.to_number(), 10.0);
     }
 
@@ -206,7 +219,8 @@ mod test {
         let right = Box::new(Value::number(10.0));
         let operator = '-';
         let op_expr = OperatorExpression::new(left, operator, right);
-        let _ = op_expr.evaluate();
+        let context = InterpreterContext::default();
+        let _ = op_expr.evaluate(&context);
     }
 
     #[test]
@@ -215,7 +229,8 @@ mod test {
         let right = Box::new(Value::number(10.0));
         let operator = '*';
         let op_expr = OperatorExpression::new(left, operator, right);
-        let val = op_expr.evaluate();
+        let context = InterpreterContext::default();
+        let val = op_expr.evaluate(&context);
         assert!(val.is_numeric());
         assert_eq!(val.to_number(), 210.0);
     }
@@ -226,7 +241,8 @@ mod test {
         let right = Box::new(Value::number(10.0));
         let operator = '*';
         let op_expr = OperatorExpression::new(left, operator, right);
-        let val = op_expr.evaluate();
+        let context = InterpreterContext::default();
+        let val = op_expr.evaluate(&context);
         assert_eq!(val.to_number(), 200.0);
     }
 
@@ -237,7 +253,8 @@ mod test {
         let right = Box::new(Value::number(10.0));
         let operator = '*';
         let op_expr = OperatorExpression::new(left, operator, right);
-        let _ = op_expr.evaluate();
+        let context = InterpreterContext::default();
+        let _ = op_expr.evaluate(&context);
     }
 
     #[test]
@@ -246,7 +263,8 @@ mod test {
         let right = Box::new(Value::number(10.0));
         let operator = '/';
         let op_expr = OperatorExpression::new(left, operator, right);
-        let val = op_expr.evaluate();
+        let context = InterpreterContext::default();
+        let val = op_expr.evaluate(&context);
         assert!(val.is_numeric());
         assert_eq!(val.to_number(), 2.0);
     }
@@ -257,7 +275,8 @@ mod test {
         let right = Box::new(Value::number(10.0));
         let operator = '/';
         let op_expr = OperatorExpression::new(left, operator, right);
-        let val = op_expr.evaluate();
+        let context = InterpreterContext::default();
+        let val = op_expr.evaluate(&context);
         assert_eq!(val.to_number(), 2.0);
     }
 
@@ -268,7 +287,8 @@ mod test {
         let right = Box::new(Value::number(10.0));
         let operator = '/';
         let op_expr = OperatorExpression::new(left, operator, right);
-        let _ = op_expr.evaluate();
+        let context = InterpreterContext::default();
+        let _ = op_expr.evaluate(&context);
     }
 
     #[test]
@@ -277,7 +297,8 @@ mod test {
         let right = Box::new(Value::number(10.0));
         let operator = '<';
         let op_expr = OperatorExpression::new(left, operator, right);
-        let val = op_expr.evaluate();
+        let context = InterpreterContext::default();
+        let val = op_expr.evaluate(&context);
         assert!(val.is_numeric());
         assert_eq!(val.to_number(), 0.0);
     }
@@ -288,7 +309,8 @@ mod test {
         let right = Box::new(Value::string("10".to_string()));
         let operator = '<';
         let op_expr = OperatorExpression::new(left, operator, right);
-        let val = op_expr.evaluate();
+        let context = InterpreterContext::default();
+        let val = op_expr.evaluate(&context);
         assert!(val.is_numeric());
         assert_eq!(val.to_number(), 0.0);
     }
@@ -299,7 +321,8 @@ mod test {
         let right = Box::new(Value::string("bbc".to_string()));
         let operator = '<';
         let op_expr = OperatorExpression::new(left, operator, right);
-        let val = op_expr.evaluate();
+        let context = InterpreterContext::default();
+        let val = op_expr.evaluate(&context);
         assert!(val.is_numeric());
         assert_eq!(val.to_number(), 1.0);
     }
@@ -310,7 +333,8 @@ mod test {
         let right = Box::new(Value::string("10".to_string()));
         let operator = '>';
         let op_expr = OperatorExpression::new(left, operator, right);
-        let val = op_expr.evaluate();
+        let context = InterpreterContext::default();
+        let val = op_expr.evaluate(&context);
         assert!(val.is_numeric());
         assert_eq!(val.to_number(), 1.0);
     }
@@ -321,7 +345,8 @@ mod test {
         let right = Box::new(Value::string("bbc".to_string()));
         let operator = '>';
         let op_expr = OperatorExpression::new(left, operator, right);
-        let val = op_expr.evaluate();
+        let context = InterpreterContext::default();
+        let val = op_expr.evaluate(&context);
         assert!(val.is_numeric());
         assert_eq!(val.to_number(), 0.0);
     }

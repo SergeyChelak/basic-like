@@ -1,7 +1,8 @@
 use std::env;
 use std::fs::read_to_string;
 
-use interpreter::Interpreter;
+use interpreter::interpret;
+
 mod ast;
 mod interpreter;
 mod parser;
@@ -18,13 +19,8 @@ fn main() {
         Result::Err(err) => {
             println!("Failed to load input file with error {err:?}")
         }
-        Result::Ok(source) => run(&source),
+        Result::Ok(source) => interpret(&source),
     }
-}
-
-fn run(source: &str) {
-    let mut interpreter = Interpreter::new();
-    interpreter.interpret(&source);
 }
 
 fn show_usage() {

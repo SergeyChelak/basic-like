@@ -1,4 +1,4 @@
-use std::mem;
+use crate::interpreter::InterpreterContext;
 
 use super::Expression;
 
@@ -12,7 +12,7 @@ pub enum Value {
 }
 
 impl Expression for Value {
-    fn evaluate(&self) -> Value {
+    fn evaluate(&self, _context: &InterpreterContext) -> Value {
         self.clone()
     }
 }
