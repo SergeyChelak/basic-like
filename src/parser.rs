@@ -2,11 +2,7 @@ use crate::{
     ast::{
         expr_operator::OperatorExpression,
         expr_variable::VariableExpression,
-        stmt_assign::AssignStatement,
-        stmt_goto::GotoStatement,
-        stmt_if_then::IfThenStatement,
-        stmt_input::InputStatement,
-        stmt_print::PrintStatement,
+        statement::Statement,
         value::{Double, Value},
         Expression,
     },
@@ -40,25 +36,25 @@ impl<'a> Parser<'a> {
             } else if self.match_types(TokenType::Word, TokenType::Equals) {
                 let name = self.last(2).text;
                 let value = self.expression();
-                let statement = AssignStatement::new(name, value);
-                self.context.put_statement(Box::new(statement));
+                let statement = Statement::assign(name, value);
+                self.context.put_statement(statement);
             } else if self.match_name("print") {
-                let statement = PrintStatement::new(self.expression());
-                self.context.put_statement(Box::new(statement));
+                let statement = Statement::print(self.expression());
+                self.context.put_statement(statement);
             } else if self.match_name("input") {
                 let name = self.consume_type(TokenType::Word).text;
-                let statement = InputStatement::new(name);
-                self.context.put_statement(Box::new(statement));
+                let statement = Statement::input(name);
+                self.context.put_statement(statement);
             } else if self.match_name("goto") {
                 let name = self.consume_type(TokenType::Word).text;
-                let statement = GotoStatement::new(name);
-                self.context.put_statement(Box::new(statement));
+                let statement = Statement::goto(name);
+                self.context.put_statement(statement);
             } else if self.match_name("if") {
                 let condition = self.expression();
                 self.consume_name("then".to_string());
                 let label = self.consume_type(TokenType::Word).text;
-                let statement = IfThenStatement::new(condition, label);
-                self.context.put_statement(Box::new(statement));
+                let statement = Statement::if_then(condition, label);
+                self.context.put_statement(statement);
             } else {
                 // Unexpected token (likely EOF), so end
                 break;

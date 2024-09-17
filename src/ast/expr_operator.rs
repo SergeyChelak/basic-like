@@ -29,50 +29,50 @@ impl Expression for OperatorExpression {
                 let is_equal = if is_left_numeric {
                     left_value.to_number() == right_value.to_number()
                 } else {
-                    left_value.to_string() == right_value.to_string()
+                    left_value.to_text() == right_value.to_text()
                 };
-                return Value::with_bool(is_equal);
+                Value::with_bool(is_equal)
             }
             '+' => {
                 // Addition if the left argument is a number, otherwise do
                 // string concatenation
                 if is_left_numeric {
                     let sum = left_value.to_number() + right_value.to_number();
-                    return Value::number(sum);
+                    Value::number(sum)
                 } else {
-                    let concat = left_value.to_string() + &right_value.to_string();
-                    return Value::string(concat);
+                    let concat = left_value.to_text() + &right_value.to_text();
+                    Value::string(concat)
                 }
             }
             '-' => {
                 let sub = left_value.to_number() - right_value.to_number();
-                return Value::number(sub);
+                Value::number(sub)
             }
             '*' => {
                 let mul = left_value.to_number() * right_value.to_number();
-                return Value::number(mul);
+                Value::number(mul)
             }
             '/' => {
                 let div = left_value.to_number() / right_value.to_number();
-                return Value::number(div);
+                Value::number(div)
             }
             '<' => {
                 // Coerce to the left argument's type, then compare
                 let val = if is_left_numeric {
                     left_value.to_number() < right_value.to_number()
                 } else {
-                    left_value.to_string() < right_value.to_string()
+                    left_value.to_text() < right_value.to_text()
                 };
-                return Value::with_bool(val);
+                Value::with_bool(val)
             }
             '>' => {
                 // Coerce to the left argument's type, then compare.
                 let val = if is_left_numeric {
                     left_value.to_number() > right_value.to_number()
                 } else {
-                    left_value.to_string() > right_value.to_string()
+                    left_value.to_text() > right_value.to_text()
                 };
-                return Value::with_bool(val);
+                Value::with_bool(val)
             }
             _ => {
                 panic!("Unknown operator {}", self.operator)
@@ -151,7 +151,7 @@ mod test {
         let context = InterpreterContext::default();
         let val = op_expr.evaluate(&context);
         assert!(!val.is_numeric());
-        assert_eq!(val.to_string(), "abcdef");
+        assert_eq!(val.to_text(), "abcdef");
     }
 
     #[test]
@@ -186,7 +186,7 @@ mod test {
         let context = InterpreterContext::default();
         let val = op_expr.evaluate(&context);
         assert!(!val.is_numeric());
-        assert_eq!(val.to_string(), "2010");
+        assert_eq!(val.to_text(), "2010");
     }
 
     #[test]

@@ -30,7 +30,7 @@ impl Value {
         Self::Number(if value { 1.0 } else { 0.0 })
     }
 
-    pub fn to_string(&self) -> String {
+    pub fn to_text(&self) -> String {
         match self {
             Value::Number(val) => val.to_string(),
             Value::Str(val) => val.clone(),
@@ -45,9 +45,6 @@ impl Value {
     }
 
     pub fn is_numeric(&self) -> bool {
-        match self {
-            Value::Number(_) => true,
-            _ => false,
-        }
+        matches!(self, Value::Number(_))
     }
 }

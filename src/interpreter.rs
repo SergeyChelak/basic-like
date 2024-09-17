@@ -1,7 +1,10 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, io};
 
 use crate::{
-    ast::{value::Value, Statement},
+    ast::{
+        statement::Statement,
+        value::{Double, Value},
+    },
     parser::Parser,
     tokenizer::Tokenizer,
 };
@@ -24,7 +27,7 @@ pub fn interpret(source: &str) {
 pub struct InterpreterContext {
     labels: HashMap<String, usize>,
     variables: HashMap<String, Value>,
-    statements: Vec<Box<dyn Statement>>,
+    statements: Vec<Statement>,
     statement_index: usize,
 }
 
@@ -34,7 +37,7 @@ impl InterpreterContext {
     }
 
     pub fn label(&self, name: &str) -> Option<usize> {
-        self.labels.get(name).map(|x| *x)
+        self.labels.get(name).copied()
     }
 
     pub fn put_variable(&mut self, name: String, value: Value) {
@@ -45,7 +48,7 @@ impl InterpreterContext {
         self.labels.insert(label, position);
     }
 
-    pub fn put_statement(&mut self, statement: Box<dyn Statement>) {
+    pub fn put_statement(&mut self, statement: Statement) {
         self.statements.push(statement)
     }
 
@@ -53,17 +56,52 @@ impl InterpreterContext {
         self.statements.len()
     }
 
-    pub fn set_statement_index(&mut self, index: usize) {
-        self.statement_index = index;
-    }
-
     fn run(&mut self) {
         self.statement_index = 0;
-        while self.statement_index < self.statements_count() {
+        loop {
             let index = self.statement_index;
             self.statement_index += 1;
-            // let statement = self.statements[index].clone();
-            // statement.execute(self);
+            let Some(statement) = self.statements.get(index) else {
+                break;
+            };
+            use Statement::*;
+            match statement {
+                Assign { name, value } => {
+                    let eval = value.evaluate(self);
+                    self.put_variable(name.clone(), eval);
+                }
+                Goto { label } => {
+                    if let Some(index) = self.label(label) {
+                        self.statement_index = index;
+                    }
+                }
+                IfThen { condition, label } => {
+                    if let Some(index) = self.label(label) {
+                        let val = condition.evaluate(self).to_number();
+                        if val != 0.0 {
+                            self.statement_index = index;
+                        }
+                    }
+                }
+                Print { expression } => {
+                    let eval = expression.evaluate(self).to_text();
+                    println!("{eval}")
+                }
+                Input { name } => {
+                    let mut buffer = String::new();
+                    // TODO: replace stdin to local variable
+                    io::stdin()
+                        .read_line(&mut buffer)
+                        .expect("Failed to read from stdin");
+
+                    let value = if let Ok(val) = buffer.trim_end().parse::<Double>() {
+                        Value::number(val)
+                    } else {
+                        Value::string(buffer)
+                    };
+                    self.put_variable(name.clone(), value);
+                }
+            }
         }
     }
 }
