@@ -67,7 +67,7 @@ impl<'a> Parser<'a> {
     }
 
     fn operator(&mut self) -> Box<dyn Expression> {
-        let mut expression = self.expression();
+        let mut expression = self.atomic();
 
         while self.match_type(TokenType::Operator) || self.match_type(TokenType::Equals) {
             let op = self
