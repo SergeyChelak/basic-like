@@ -10,6 +10,12 @@ use crate::{
     tokenizer::{Token, TokenType},
 };
 
+const KEYWORD_PRINT: &str = "print";
+const KEYWORD_INPUT: &str = "input";
+const KEYWORD_GOTO: &str = "goto";
+const KEYWORD_IF: &str = "if";
+const KEYWORD_THEN: &str = "then";
+
 pub struct Parser<'a> {
     tokens: Vec<Token>,
     position: usize,
@@ -38,20 +44,20 @@ impl<'a> Parser<'a> {
                 let value = self.expression();
                 let statement = Statement::assign(name, value);
                 self.context.put_statement(statement);
-            } else if self.match_name("print") {
+            } else if self.match_name(KEYWORD_PRINT) {
                 let statement = Statement::print(self.expression());
                 self.context.put_statement(statement);
-            } else if self.match_name("input") {
+            } else if self.match_name(KEYWORD_INPUT) {
                 let name = self.consume_type(TokenType::Word).text;
                 let statement = Statement::input(name);
                 self.context.put_statement(statement);
-            } else if self.match_name("goto") {
+            } else if self.match_name(KEYWORD_GOTO) {
                 let name = self.consume_type(TokenType::Word).text;
                 let statement = Statement::goto(name);
                 self.context.put_statement(statement);
-            } else if self.match_name("if") {
+            } else if self.match_name(KEYWORD_IF) {
                 let condition = self.expression();
-                self.consume_name("then".to_string());
+                self.consume_name(KEYWORD_THEN);
                 let label = self.consume_type(TokenType::Word).text;
                 let statement = Statement::if_then(condition, label);
                 self.context.put_statement(statement);
@@ -143,7 +149,7 @@ impl<'a> Parser<'a> {
         if token.t_type != TokenType::Word {
             return false;
         }
-        if token.text != name {
+        if token.text.to_lowercase() != name {
             return false;
         }
         self.position += 1;
@@ -174,8 +180,8 @@ impl<'a> Parser<'a> {
 
     /// Consumes the next token if it's a word with the given name. If not,
     /// throws an exception.
-    fn consume_name(&mut self, name: String) -> Token {
-        if !self.match_name(&name) {
+    fn consume_name(&mut self, name: &str) -> Token {
+        if !self.match_name(name) {
             panic!("Expected {name}")
         }
         self.last(1)
