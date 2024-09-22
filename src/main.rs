@@ -24,5 +24,10 @@ fn main() {
 }
 
 fn show_usage() {
-    println!("Usage: todo");
+    println!(
+        r"Usage:
+        basic-like <script>
+
+        <script> input file name with source code"
+    );
 }
