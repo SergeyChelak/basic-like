@@ -44,8 +44,7 @@ impl Token {
 enum State {
     Default,
     Word,
-    Number,
-    DecimalNumber,
+    Number { is_decimal: bool },
     String,
     Comment,
 }
@@ -99,7 +98,7 @@ impl Tokenizer {
                             self.state = State::Word;
                         } else if ch.is_ascii_digit() {
                             self.accumulator.push(ch);
-                            self.state = State::Number;
+                            self.state = State::Number { is_decimal: false };
                         } else if ch == '"' {
                             self.state = State::String;
                         } else if ch == '\'' {
@@ -116,23 +115,15 @@ impl Tokenizer {
                             redo = true;
                         }
                     }
-                    State::Number => {
+                    State::Number { is_decimal } => {
                         // HACK: Negative numbers and floating points aren't supported.
                         // To get a negative number, just do 0 - <your number>.
                         // To get a floating point, divide.
                         if ch.is_ascii_digit() {
                             self.accumulator.push(ch);
-                        } else if ch == '.' {
+                        } else if ch == '.' && !is_decimal {
                             self.accumulator.push(ch);
-                            self.state = State::DecimalNumber;
-                        } else {
-                            self.push_accumulator(TokenType::Number);
-                            redo = true;
-                        }
-                    }
-                    State::DecimalNumber => {
-                        if ch.is_ascii_digit() {
-                            self.accumulator.push(ch);
+                            self.state = State::Number { is_decimal: true };
                         } else {
                             self.push_accumulator(TokenType::Number);
                             redo = true;
@@ -165,7 +156,7 @@ impl Tokenizer {
     fn flush(&mut self) {
         if !self.accumulator.is_empty() {
             match self.state {
-                State::Number | State::DecimalNumber => self.push_accumulator(TokenType::Number),
+                State::Number { is_decimal: _ } => self.push_accumulator(TokenType::Number),
                 State::Word => self.push_accumulator(TokenType::Word),
                 State::String => self.push_accumulator(TokenType::String),
                 _ => {}
