@@ -45,6 +45,7 @@ enum State {
     Default,
     Word,
     Number,
+    DecimalNumber,
     String,
     Comment,
 }
@@ -121,6 +122,17 @@ impl Tokenizer {
                         // To get a floating point, divide.
                         if ch.is_ascii_digit() {
                             self.accumulator.push(ch);
+                        } else if ch == '.' {
+                            self.accumulator.push(ch);
+                            self.state = State::DecimalNumber;
+                        } else {
+                            self.push_accumulator(TokenType::Number);
+                            redo = true;
+                        }
+                    }
+                    State::DecimalNumber => {
+                        if ch.is_ascii_digit() {
+                            self.accumulator.push(ch);
                         } else {
                             self.push_accumulator(TokenType::Number);
                             redo = true;
@@ -153,7 +165,7 @@ impl Tokenizer {
     fn flush(&mut self) {
         if !self.accumulator.is_empty() {
             match self.state {
-                State::Number => self.push_accumulator(TokenType::Number),
+                State::Number | State::DecimalNumber => self.push_accumulator(TokenType::Number),
                 State::Word => self.push_accumulator(TokenType::Word),
                 State::String => self.push_accumulator(TokenType::String),
                 _ => {}
@@ -254,5 +266,15 @@ mod test {
         assert!(matches!(tokens[2].t_type, TokenType::Number));
         assert!(matches!(tokens[3].t_type, TokenType::Equals));
         assert!(matches!(tokens[4].t_type, TokenType::Number));
+    }
+
+    #[test]
+    fn tokenize_decimal_digit() {
+        let script = "12.345";
+        let mut tokenizer = Tokenizer::new();
+        let tokens = tokenizer.tokenize(script);
+        assert_eq!(tokens.len(), 1);
+        assert!(matches!(tokens[0].t_type, TokenType::Number));
+        assert_eq!(tokens[0].text, "12.345");
     }
 }
